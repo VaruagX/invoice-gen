@@ -11,10 +11,7 @@ const { initDb, pool } = require("./db");
 const { appUrl, googleCallbackUrl, isProduction, port } = require("./config");
 
 const app = express();
-
-if (isProduction) {
-  app.set("trust proxy", 1);
-}
+app.set("trust proxy", 1);
 
 // Middleware
 app.use(express.json());
@@ -30,6 +27,7 @@ app.use(
 // Session
 app.use(
   session({
+    name: "invoice.sid",
     store: new PgSession({
       pool,
       createTableIfMissing: true,
@@ -38,6 +36,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     proxy: isProduction,
+    unset: "destroy",
     cookie: {
       httpOnly: true,
       sameSite: "lax",
