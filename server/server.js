@@ -8,10 +8,13 @@ const cors = require("cors");
 const path = require("path");
 const apiRouter = require("./api");
 const { initDb, pool } = require("./db");
+const { appUrl, googleCallbackUrl, isProduction, port } = require("./config");
 
 const app = express();
-const PORT = Number(process.env.PORT || 8000);
-const APP_URL = process.env.APP_URL || `http://localhost:${PORT}`;
+
+if (isProduction) {
+  app.set("trust proxy", 1);
+}
 
 // Middleware
 app.use(express.json());
@@ -19,7 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: APP_URL,
+    origin: appUrl,
     credentials: true,
   })
 );
@@ -34,10 +37,11 @@ app.use(
     secret: process.env.SESSION_SECRET || "fallback_secret",
     resave: false,
     saveUninitialized: false,
+    proxy: isProduction,
     cookie: {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: isProduction,
       maxAge: 1000 * 60 * 60 * 24 * 7,
     },
   })
@@ -79,14 +83,15 @@ app.use((error, req, res, next) => {
 });
 
 initDb().then(() => {
-  const server = app.listen(PORT, () => {
-    console.log(`Server running on ${APP_URL}`);
+  const server = app.listen(port, () => {
+    console.log(`Server running on ${appUrl}`);
+    console.log(`Google OAuth callback URL: ${googleCallbackUrl}`);
   });
 
   server.on("error", (error) => {
     if (error.code === "EADDRINUSE") {
       console.error(
-        `Port ${PORT} is already in use. Stop the existing server or set PORT to another value.`
+        `Port ${port} is already in use. Stop the existing server or set PORT to another value.`
       );
       process.exit(1);
     }
