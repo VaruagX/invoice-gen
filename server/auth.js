@@ -3,12 +3,14 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const { query, upsertGoogleUser } = require("./db");
 const { googleCallbackUrl } = require("./config");
 
+// Keep auth module side-effect free except for strategy registration.
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: googleCallbackUrl,
+      passReqToCallback: false,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {

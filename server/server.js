@@ -10,6 +10,15 @@ const apiRouter = require("./api");
 const { initDb, pool } = require("./db");
 const { appUrl, googleCallbackUrl, isProduction, port } = require("./config");
 
+console.log("[server] boot", {
+  NODE_ENV: process.env.NODE_ENV,
+  PORT: process.env.PORT,
+  appUrl,
+  googleCallbackUrl,
+  trustProxy: 1,
+  sessionCookieSameSite: isProduction ? "none" : "lax",
+});
+
 const app = express();
 app.set("trust proxy", 1);
 
@@ -39,7 +48,9 @@ app.use(
     unset: "destroy",
     cookie: {
       httpOnly: true,
-      sameSite: "lax",
+      // Render uses HTTPS and is typically cross-site from the browser's perspective.
+      // Use None to ensure the cookie is accepted after Google redirects.
+      sameSite: isProduction ? "none" : "lax",
       secure: isProduction,
       maxAge: 1000 * 60 * 60 * 24 * 7,
     },

@@ -24,6 +24,7 @@ function resolveAppUrl() {
     "APP_URL"
   );
 
+
   if (configuredUrl) {
     return configuredUrl;
   }
@@ -42,10 +43,16 @@ function resolveAppUrl() {
 }
 
 function resolveGoogleCallbackUrl() {
+  // Always prefer the explicit callback URL if provided.
+  // This eliminates redirect_uri_mismatch caused by wrong origin detection.
   if (process.env.GOOGLE_CALLBACK_URL) {
-    return normalizeUrl(process.env.GOOGLE_CALLBACK_URL, "GOOGLE_CALLBACK_URL");
+    return normalizeUrl(
+      process.env.GOOGLE_CALLBACK_URL,
+      "GOOGLE_CALLBACK_URL"
+    );
   }
 
+  // Fallback: derive from app origin.
   return `${resolveAppUrl()}/auth/google/callback`;
 }
 
