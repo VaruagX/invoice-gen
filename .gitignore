@@ -1,0 +1,36 @@
+# dependencies
+node_modules/
+
+# environment variables
+.env
+
+# uploads
+uploads/
+
+# logs
+logs
+*.log
+npm-debug.log*
+
+# macOS
+.DS_Store
+
+# build files
+dist/
+build/
+
+# vscode
+.vscode/
+
+# cache
+.cache/
+
+# temporary files
+tmp/
+temp/
+
+# coverage
+coverage/
+
+# system files
+Thumbs.db
