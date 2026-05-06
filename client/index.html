@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Invoice Studio helps you create, manage, export, and track professional invoices.">
+  <meta name="theme-color" content="#2563eb">
   <title>Invoice Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,10 +15,30 @@
   <div id="toast" class="toast" aria-live="polite"></div>
   <div id="app">
     <div class="loading-screen">
-      <div class="loader"></div>
-      <p>Preparing your workspace</p>
+      <div>
+        <div class="loader" aria-hidden="true"></div>
+        <p class="muted">Preparing your workspace</p>
+      </div>
     </div>
   </div>
-  <script src="/assets/js/app.js?v=20260506-2"></script>
+  <noscript>
+    <main class="login-shell">
+      <section class="login-card">
+        <div class="login-hero">
+          <div class="brand"><span class="brand-mark">IS</span><span>Invoice Studio</span></div>
+          <div>
+            <h1>Invoice Studio</h1>
+            <p>Enable JavaScript to sign in, manage customers, create invoices, and export PDFs.</p>
+          </div>
+        </div>
+        <div class="login-panel">
+          <span class="eyebrow">JavaScript required</span>
+          <h2>Your invoice workspace needs JavaScript.</h2>
+          <p class="muted">Turn on JavaScript in your browser, then reload this page to continue with Google.</p>
+        </div>
+      </section>
+    </main>
+  </noscript>
+  <script src="/assets/js/app.js?v=20260506-3" defer></script>
 </body>
 </html>
