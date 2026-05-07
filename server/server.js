@@ -10,13 +10,20 @@ const apiRouter = require("./api");
 const { initDb, pool } = require("./db");
 const { appUrl, googleCallbackUrl, isProduction, port } = require("./config");
 
+const sessionCookieConfig = {
+  httpOnly: true,
+  sameSite: "lax",
+  secure: isProduction,
+  maxAge: 1000 * 60 * 60 * 24 * 7,
+};
+
 console.log("[server] boot", {
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
   appUrl,
   googleCallbackUrl,
   trustProxy: 1,
-  sessionCookieSameSite: isProduction ? "none" : "lax",
+  sessionCookie: sessionCookieConfig,
 });
 
 const app = express();
@@ -46,14 +53,7 @@ app.use(
     saveUninitialized: false,
     proxy: isProduction,
     unset: "destroy",
-    cookie: {
-      httpOnly: true,
-      // Render uses HTTPS and is typically cross-site from the browser's perspective.
-      // Use None to ensure the cookie is accepted after Google redirects.
-      sameSite: isProduction ? "none" : "lax",
-      secure: isProduction,
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    },
+    cookie: sessionCookieConfig,
   })
 );
 
@@ -68,6 +68,11 @@ app.use("/assets", express.static(path.join(__dirname, "../client/assets")));
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.get("/", (req, res, next) => {
+  console.log("[server] Home route requested", {
+    sessionID: req.sessionID,
+    isAuthenticated: Boolean(req.isAuthenticated && req.isAuthenticated()),
+  });
+
   if (req.isAuthenticated && req.isAuthenticated()) {
     return res.redirect("/dashboard");
   }
@@ -82,6 +87,14 @@ app.get(["/dashboard", "/dashboard/*"], (req, res) => {
   if (!req.isAuthenticated()) {
     return res.redirect("/");
   }
+  res.sendFile(path.join(__dirname, "../client/index.html"));
+});
+
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api/") || req.path.startsWith("/auth/")) {
+    return next();
+  }
+
   res.sendFile(path.join(__dirname, "../client/index.html"));
 });
 

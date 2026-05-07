@@ -1,17 +1,22 @@
 const passport = require("./auth");
-const { googleCallbackUrl } = require("./config");
+const { googleCallbackUrl, isProduction } = require("./config");
 
 // Where the SPA should land after successful auth.
 // This is intentionally `/` because this app serves the SPA from `/`.
 const postAuthRedirect = "/";
 
-
 function saveSessionAndRedirect(req, res, next, target) {
   req.session.save((error) => {
     if (error) {
+      console.error("[auth] Failed to save session before redirect", error);
       return next(error);
     }
 
+    console.log("[auth] Session saved. Redirecting after login.", {
+      sessionID: req.sessionID,
+      target,
+      isAuthenticated: Boolean(req.isAuthenticated && req.isAuthenticated()),
+    });
     res.redirect(target);
   });
 }
@@ -20,7 +25,12 @@ module.exports = (app) => {
   console.log("[auth] Routes mounted: /auth/google and /auth/google/callback");
 
   app.get("/auth/google", (req, res, next) => {
-    console.log(`Starting Google OAuth flow. Callback URL: ${googleCallbackUrl}`);
+    console.log("[auth] Starting Google OAuth flow", {
+      callbackURL: googleCallbackUrl,
+      sessionID: req.sessionID,
+      secureRequest: req.secure,
+      forwardedProto: req.get("x-forwarded-proto"),
+    });
     passport.authenticate("google", { scope: ["profile", "email"] })(
       req,
       res,
@@ -39,12 +49,12 @@ module.exports = (app) => {
 
     passport.authenticate("google", (error, user, info) => {
       if (error) {
-        console.error("Google OAuth callback failed:", error);
+        console.error("[auth] Google OAuth callback failed", error);
         return next(error);
       }
 
       if (!user) {
-        console.warn("Google OAuth did not return a user.", info || {});
+        console.warn("[auth] Google OAuth did not return a user", info || {});
         console.warn("[auth] Callback missing user. Redirecting to home.");
         return res.redirect("/" + "?auth=failed");
       }
@@ -56,12 +66,10 @@ module.exports = (app) => {
 
       req.logIn(user, (loginError) => {
         if (loginError) {
-          console.error("Google OAuth login session failed:", loginError);
+          console.error("[auth] Google OAuth login session failed", loginError);
           return next(loginError);
         }
 
-        // Redirect to a route that is guaranteed to exist.
-        // This app serves the SPA from `/` and uses hash/history for internal pages.
         saveSessionAndRedirect(req, res, next, postAuthRedirect);
       });
     })(req, res, next);
@@ -78,7 +86,12 @@ module.exports = (app) => {
           return next(sessionError);
         }
 
-        res.clearCookie("invoice.sid");
+        res.clearCookie("invoice.sid", {
+          httpOnly: true,
+          sameSite: "lax",
+          secure: isProduction,
+        });
+        console.log("[auth] User logged out. Redirecting to home.");
         res.redirect("/");
       });
     });

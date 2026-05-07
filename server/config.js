@@ -1,4 +1,5 @@
 const DEFAULT_PORT = 8000;
+const DEFAULT_PRODUCTION_APP_URL = "https://invoice-gen-04ry.onrender.com";
 
 const port = Number(process.env.PORT || DEFAULT_PORT);
 const isProduction = process.env.NODE_ENV === "production";
@@ -24,7 +25,6 @@ function resolveAppUrl() {
     "APP_URL"
   );
 
-
   if (configuredUrl) {
     return configuredUrl;
   }
@@ -33,13 +33,7 @@ function resolveAppUrl() {
     return new URL(resolveGoogleCallbackUrl()).origin;
   }
 
-  if (isProduction) {
-    throw new Error(
-      "APP_URL or GOOGLE_CALLBACK_URL must be set when NODE_ENV=production."
-    );
-  }
-
-  return defaultLocalAppUrl;
+  return isProduction ? DEFAULT_PRODUCTION_APP_URL : defaultLocalAppUrl;
 }
 
 function resolveGoogleCallbackUrl() {
