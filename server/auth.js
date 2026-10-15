@@ -20,20 +20,11 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        console.log("[auth] Google profile received", {
-          googleId: profile.id,
-          email: profile.emails?.[0]?.value,
-        });
-
         const user = await upsertGoogleUser(profile);
-        console.log("[auth] Google user upserted", {
-          userId: user.id,
-          email: user.email,
-        });
-
+        console.log("[auth] Google user signed in", { userId: user.id });
         return done(null, user);
       } catch (error) {
-        console.error("[auth] GoogleStrategy verify failed", error);
+        console.error("[auth] GoogleStrategy verify failed:", error.message);
         return done(error);
       }
     }
@@ -41,7 +32,6 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  console.log("[auth] Serializing user into session", { userId: user.id });
   done(null, user.id);
 });
 
@@ -51,14 +41,9 @@ passport.deserializeUser(async (id, done) => {
       "SELECT id, google_id, email, name, avatar_url, created_at FROM users WHERE id = $1",
       [id]
     );
-    const user = result.rows[0] || false;
-    console.log("[auth] Deserialized session user", {
-      userId: id,
-      found: Boolean(user),
-    });
-    done(null, user);
+    done(null, result.rows[0] || false);
   } catch (error) {
-    console.error("[auth] Failed to deserialize session user", error);
+    console.error("[auth] Failed to deserialize session user:", error.message);
     done(error);
   }
 });

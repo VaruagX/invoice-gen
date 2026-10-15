@@ -4,7 +4,11 @@
   "description": "Modern full-stack invoice management platform",
   "main": "server/server.js",
   "scripts": {
-    "start": "node server/server.js"
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js",
+    "migrate": "node server/migrate.js up",
+    "migrate:status": "node server/migrate.js status",
+    "test": "node --test --test-concurrency=1 test/*.test.js"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +23,10 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pdfkit": "^0.18.0",
-    "pg": "^8.20.0"
+    "pg": "^8.20.0",
+    "qrcode-generator": "^2.0.4"
+  },
+  "engines": {
+    "node": ">=18.18"
   }
 }
